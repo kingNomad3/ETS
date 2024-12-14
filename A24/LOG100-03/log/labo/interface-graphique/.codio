@@ -1,0 +1,27 @@
+{
+    "commands": {
+        "Run GuiApp": "./run.sh src/GuiApp.java",
+        "Run Current": "./run.sh {{filepath}}",
+        "Generate Javadoc": "find ~/workspace/src -type f -name \"*.java\" | xargs javadoc -d ~/workspace/doc"
+    },
+    "preview": {
+        "Virtual Desktop": "https://{{domain3000}}/",
+        "View Javadoc": "doc/index.html"
+    },
+    "debugger": [
+        {
+            "type": "JAVA",
+            "command": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5105",
+            "before": "/home/codio/workspace/debug.sh {{filepath}}",
+            "uuid": "e72a1c9b-862d-afb0-708b-284e21e31cdb",
+            "name": "Debug Current"
+        },
+        {
+            "type": "JAVA",
+            "command": "-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5105",
+            "before": "/home/codio/workspace/debug.sh src/GuiApp.java",
+            "uuid": "7766a7c3-95e0-3a4e-95e3-394d5629a7db",
+            "name": "Debug GuiApp"
+        }
+    ]
+}

@@ -1,0 +1,511 @@
+import java.util.Scanner;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.util.List;
+
+public class ConsoleApp {
+  
+  /*
+   * Simulation attributes
+   * DO NOT EDIT
+   */
+  
+  private Scanner scan = new Scanner(System.in);
+  
+	private Airport airport = new Airport();
+	private Terminal termA = new Terminal("TERMINAL A");
+	private Terminal termB = new Terminal("TERMINAL B");
+	private Terminal termC = new Terminal("TERMINAL C");
+	private Gate[] gatesA = new Gate[3];
+	private Gate[] gatesB = new Gate[7];
+	private Gate[] gatesC = new Gate[5];
+  
+  /**
+   * Creates the objects used for the simulation.
+   * DO NOT EDIT
+   */
+  public void createObjects() {
+    
+    // Airport screens
+    
+    AirportScreen airportScreen1 = new AirportScreen(airport, "AIRPORT (1)");
+    AirportScreen airportScreen2 = new AirportScreen(airport, "AIRPORT (2)");
+    airport.attach(airportScreen1);
+    airport.attach(airportScreen2);
+    
+    // Terminal screens (three each)
+    
+    TerminalScreen termAScreen1 = new TerminalScreen(termA, "TERMINAL A (1)");
+    TerminalScreen termAScreen2 = new TerminalScreen(termA, "TERMINAL A (2)");
+    TerminalScreen termAScreen3 = new TerminalScreen(termA, "TERMINAL A (3)");
+    termA.attach(termAScreen1);
+    termA.attach(termAScreen2);
+    termA.attach(termAScreen3);
+    
+    TerminalScreen termBScreen1 = new TerminalScreen(termB, "TERMINAL B (1)");
+    TerminalScreen termBScreen2 = new TerminalScreen(termB, "TERMINAL B (2)");
+    TerminalScreen termBScreen3 = new TerminalScreen(termB, "TERMINAL B (3)");
+    termB.attach(termBScreen1);
+    termB.attach(termBScreen2);
+    termB.attach(termBScreen3);
+    
+    TerminalScreen termCScreen1 = new TerminalScreen(termC, "TERMINAL C (1)");
+    TerminalScreen termCScreen2 = new TerminalScreen(termC, "TERMINAL C (2)");
+    TerminalScreen termCScreen3 = new TerminalScreen(termC, "TERMINAL C (3)");
+    termC.attach(termCScreen1);
+    termC.attach(termCScreen2);
+    termC.attach(termCScreen3);
+    
+    // Gates and gate screens
+    
+    // Terminal A
+    for(int i = 0; i < gatesA.length; ++i) {
+      gatesA[i] = new Gate("A-" + (i + 1));
+      gatesA[i].attach(new GateScreen(gatesA[i]));
+    }
+    
+    // Terminal B
+    for(int i = 0; i < gatesB.length; ++i) {
+      gatesB[i] = new Gate("B-" + (i + 1));
+      gatesB[i].attach(new GateScreen(gatesB[i]));
+    }
+    
+    // Terminal C
+    for(int i = 0; i < gatesC.length; ++i) {
+      gatesC[i] = new Gate("C-" + (i + 1));
+      gatesC[i].attach(new GateScreen(gatesC[i]));
+    }
+  }
+  
+  /**
+   * Adds a new flight based on user-provided information.
+   */
+  public void addFlight() {
+    
+    // Collect flight information from the console
+    
+    System.out.print("Company: ");
+    String company = scan.next();
+    
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+    
+    System.out.print("Destination: ");
+    String destination = scan.next();
+    
+    System.out.print("Departure Time (0000): ");
+    int departureTime = scan.nextInt();
+    
+    System.out.print("Terminal (A, B, C): ");
+    String terminal = scan.next();
+    
+    System.out.print("Gate Number: ");
+    int gateNumber = scan.nextInt();
+    
+    System.out.println("Status:");
+    System.out.println("1 - " + Flight.ONTIME);
+    System.out.println("2 - " + Flight.CANCELLED);
+    System.out.println("3 - " + Flight.BOARDING);
+    System.out.println("4 - " + Flight.DELAYED);
+    int statusInt = scan.nextInt();
+    String statusStr = "";
+    switch(statusInt) {
+      case 1: statusStr = Flight.ONTIME; break;
+      case 2: statusStr = Flight.CANCELLED; break;
+      case 3: statusStr = Flight.BOARDING; break;
+      case 4: statusStr = Flight.DELAYED; break;
+    }
+    
+    // Create an instance of Flight
+    Flight flight = new Flight(company, flightNumber, destination,
+      departureTime, terminal + "-" + gateNumber, statusStr);
+    
+    // Add it to the airport's list of flights
+    airport.addFlight(flight);
+    
+    // Add it to the appropriate terminal and gate
+    switch(terminal) {
+      case "A":
+        termA.addFlight(flight);
+        gatesA[gateNumber - 1].addFlight(flight);
+        break;
+      case "B":
+        termB.addFlight(flight);
+        gatesB[gateNumber - 1].addFlight(flight);
+        break;
+      case "C":
+        termC.addFlight(flight);
+        gatesC[gateNumber - 1].addFlight(flight);
+        break;        
+    }
+  }
+  
+  /*
+   * TODO: Implement the following methods. You may add other methods as well.
+   */
+  
+  /**
+   * Met à jour le statut d'un vol en DELAYED.
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   */
+  public void delayFlight() {
+    
+    System.out.print("Company: ");
+    String company = scan.next();
+    
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    updateStatus(Flight.DELAYED, company, flightNumber);
+
+  }
+
+  /**
+   * Trouve toutes les occurrences d'un vol dans l'aéroport, les terminaux et les portes.
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   * @return Une liste d'entrées contenant les vols trouvés et leurs emplacements (Subjects).
+   */
+  public List<Map.Entry<Flight, Subject>> findAllOccurrences(String company, int flightNumber) {
+    List<Map.Entry<Flight, Subject>> results = new ArrayList<>();
+    
+    // Vérifier le Airpot
+    for (Flight flight : airport.getFlights()) {
+      if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+        results.add(Map.entry(flight, airport));
+      }
+    }
+
+    // Vérifier les Terminals
+    for (Flight flight : termA.getFlights()) {
+      if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+        results.add(Map.entry(flight, termA));
+      }
+    }
+    for (Flight flight : termB.getFlights()) {
+      if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+        results.add(Map.entry(flight, termB));
+      }
+    }
+    for (Flight flight : termC.getFlights()) {
+      if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+        results.add(Map.entry(flight, termC));
+      }
+    }
+
+    // Vérifier les Gates
+    for (Gate gate : gatesA) {
+      for (Flight flight : gate.getFlights()) {
+        if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+          results.add(Map.entry(flight, gate));
+        }
+      }
+    }
+    for (Gate gate : gatesB) {
+      for (Flight flight : gate.getFlights()) {
+        if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+          results.add(Map.entry(flight, gate));
+        }
+      }
+    }
+    for (Gate gate : gatesC) {
+      for (Flight flight : gate.getFlights()) {
+        if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+          results.add(Map.entry(flight, gate));
+        }
+      }
+    }
+    return results;
+  }
+
+    /**
+   * Met à jour le statut d'un vol et notifie les observateurs.
+   * Appelée par delayFlight(), cancelFlight() et notifyBoarding().
+   * @param status Le nouveau statut du vol.
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   */
+  public void updateStatus(String status, String company, int flightNumber) {
+    // Trouver toutes les occurrences du Flight
+    List<Map.Entry<Flight, Subject>> occurrences = findAllOccurrences(company, flightNumber);
+    
+    if (occurrences.isEmpty()) {
+      System.out.println("Flight not found.");
+      return;
+    }
+
+    for (Map.Entry<Flight, Subject> entry : occurrences) {
+      Flight flight = entry.getKey();
+      Subject subject = entry.getValue();
+
+      flight.setStatus(status);
+
+      subject.notifyObservers();
+    }
+
+  }
+
+    /**
+   * Change la porte et le terminal associés à un vol.
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   * @param terminal Le nouveau terminal (ex: "A", "B", "C").
+   * @param gateNumber Le nouveau numéro de porte.
+   */
+  public void changeGate() {
+    System.out.print("Company: ");
+    String company = scan.next();
+    
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    System.out.print("Terminal (A, B, C): ");
+    String terminal = scan.next();
+    
+    System.out.print("Gate Number: ");
+    int gateNumber = scan.nextInt();
+    
+    updateGate(company, flightNumber, terminal, gateNumber);    
+  }
+
+    /**
+   * Vérifie si une porte spécifique est déjà occupée par un vol.
+   * Appelée par updateGate().
+   * @param gateCheck Le terminal associé à la porte (ex: "A", "B", "C").
+   * @param newGateNumber Le numéro de porte à vérifier.
+   * @return True si la porte est occupée, sinon False.
+   */
+  public boolean gateTakenCheck(String gateCheck, int newGateNumber) {
+    Gate[] tempGateCheck = null;
+    switch (gateCheck) {
+        case "A":
+            tempGateCheck = gatesA;
+            break;
+        case "B":
+            tempGateCheck = gatesB;
+            break;
+        case "C":
+            tempGateCheck = gatesC;
+            break;
+    }
+
+    if (tempGateCheck != null) {
+        for (Gate g : tempGateCheck) {
+            int gateNum = Integer.parseInt(g.getGateName().split("-")[1]); // Use getGateName() here
+            if (gateNum == newGateNumber && !g.getFlights().isEmpty()) {
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+
+   /**
+   * Met à jour la porte et le terminal d'un vol, tout en gérant les notifications.
+   * Appelée par changeGate().
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   * @param newTerminal Le nouveau terminal.
+   * @param newGateNumber Le nouveau numéro de porte.
+   */
+  public void updateGate(String company, int flightNumber, String newTerminal, int newGateNumber){
+    List<Map.Entry<Flight, Subject>> occurrences = findAllOccurrences(company, flightNumber);
+    if (occurrences.isEmpty()) {
+      System.out.println("Flight not found.");
+      return;
+    }
+
+    if(gateTakenCheck(newTerminal, newGateNumber)){
+      System.out.println("New gate " + newTerminal + "-" + newGateNumber + " is not available");
+      return;
+    }
+    
+    boolean differentTerminal = false;
+    for (Map.Entry<Flight, Subject> entry : occurrences) {
+      Flight flight = entry.getKey();
+      Subject subject = entry.getValue();
+      String currentTerminal = flight.getGate().split("-")[0];
+      
+      if(!currentTerminal.equals(newTerminal)){
+        if (subject instanceof Terminal) {
+          subject.removeFlight(flight);  
+          differentTerminal = true;        
+        }
+      }
+        
+      if(subject instanceof Gate){
+        subject.removeFlight(flight);
+      }
+    }
+
+    for (Map.Entry<Flight, Subject> entry : occurrences) {
+      Flight flight = entry.getKey();
+      Subject subject = entry.getValue();
+
+      flight.setGate(newTerminal + "-" + newGateNumber);
+
+      if(subject instanceof Airport){
+        if(subject.getFlights().size() > 0){
+          subject.notifyObservers();
+        }
+      }
+      String currentTerminal = flight.getGate().split("-")[0];    
+      if(differentTerminal){
+        if (subject instanceof Terminal) {
+         
+          if (newTerminal.equals("A")) {
+              termA.addFlight(flight);
+          } else if (newTerminal.equals("B")) {
+              termB.addFlight(flight);
+          } else if (newTerminal.equals("C")) {
+              termC.addFlight(flight);
+          }
+          
+        }
+      }
+      
+      if (subject instanceof Terminal)
+        if(subject.getFlights().size() > 0)
+          subject.notifyObservers();
+     
+      if(subject instanceof Gate){      
+        switch(newTerminal) {
+          case "A":
+            gatesA[newGateNumber - 1].addFlight(flight);
+            break;
+          case "B":
+            gatesB[newGateNumber - 1].addFlight(flight);
+            break;
+          case "C":
+            gatesC[newGateNumber - 1].addFlight(flight);
+            break;        
+        }  
+        if(subject.getFlights().size() > 0){
+          subject.notifyObservers();
+        }
+      }
+      
+    }
+
+  }
+
+  /**
+   * Annule un vol en mettant à jour son statut.
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   */
+  public void cancelFlight() {
+    System.out.print("Company: ");
+    String company = scan.next();
+    
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    updateStatus(Flight.CANCELLED, company, flightNumber);
+
+  }
+
+  /**
+   * Met à jour le statut d'un vol pour indiquer qu'il est en période d'embarquement.
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   */
+  public void notifyBoarding() {
+    System.out.print("Company: ");
+    String company = scan.next();
+    
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    updateStatus(Flight.BOARDING, company, flightNumber);
+  }
+  
+  /**
+   * Supprime un vol de l'aéroport, du terminal et de la porte associés.
+   * @param company La compagnie aérienne du vol.
+   * @param flightNumber Le numéro de vol.
+   */
+  public void removeFlight() {
+    System.out.print("Company: ");
+    String company = scan.next();
+
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    List<Map.Entry<Flight, Subject>> occurrences = findAllOccurrences(company, flightNumber);
+
+    if (occurrences.isEmpty()) {
+      System.out.println("Flight not found.");
+      return;
+    }
+
+    for (Map.Entry<Flight, Subject> entry : occurrences) {
+      Flight flight = entry.getKey();
+      Subject subject = entry.getValue();
+
+      subject.removeFlight(flight);
+    }
+  }
+  
+  /**
+   * Displays the options available in the console.
+   * DO NOT EDIT
+   */
+  public void displayMenu() {
+    System.out.println("********************");
+    System.out.println("1 - Add Flight");
+    System.out.println("2 - Delay Flight");
+    System.out.println("3 - Change Gate");
+    System.out.println("4 - Cancel Flight");
+    System.out.println("5 - Notify Boarding");
+    System.out.println("6 - Remove Flight");
+    System.out.println("0 - Quit");
+    System.out.println("********************");
+  }
+  
+  /**
+   * Displays the choice menu, waits for the user input, and calls the appropriate method.
+   * DO NOT EDIT
+   */
+  public void displayPrompt() {
+    int option = 0;
+    
+    do {
+      displayMenu();
+      System.out.print("Select Option: ");
+      option = scan.nextInt();
+      
+      switch(option) {
+        case 1: addFlight(); break;
+        case 2: delayFlight(); break;
+        case 3: changeGate(); break;
+        case 4: cancelFlight(); break;
+        case 5: notifyBoarding(); break;
+        case 6: removeFlight(); break;
+        case 0: scan.close(); break;
+        default:
+          System.out.println("Error - stop");
+          scan.close();
+          return;
+      }
+    } while (option != 0); // While the option is not Quit
+  }
+  
+  /**
+   * Creates all the objects and starts the simulation.
+   * DO NOT EDIT
+   */
+  public static void main(String[] args) {
+    ConsoleApp app = new ConsoleApp();
+    
+    // Object setup
+    app.createObjects();
+    
+    // Start the simulation
+    app.displayPrompt();
+  }
+
+}

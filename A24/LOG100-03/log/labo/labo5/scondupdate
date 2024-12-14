@@ -1,0 +1,581 @@
+import java.util.Scanner;
+import java.util.Collection;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Map;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+
+
+public class ConsoleApp {
+  
+  /*
+   * Simulation attributes
+   * DO NOT EDIT
+   */
+  
+  private Scanner scan = new Scanner(System.in);
+  
+	private Airport airport = new Airport();
+	private Terminal termA = new Terminal("TERMINAL A");
+	private Terminal termB = new Terminal("TERMINAL B");
+	private Terminal termC = new Terminal("TERMINAL C");
+	private Gate[] gatesA = new Gate[3];
+	private Gate[] gatesB = new Gate[7];
+	private Gate[] gatesC = new Gate[5];
+  
+  /**
+   * Creates the objects used for the simulation.
+   * DO NOT EDIT
+   */
+  public void createObjects() {
+    
+    // Airport screens
+    
+    AirportScreen airportScreen1 = new AirportScreen(airport, "AIRPORT (1)");
+    AirportScreen airportScreen2 = new AirportScreen(airport, "AIRPORT (2)");
+    airport.attach(airportScreen1);
+    airport.attach(airportScreen2);
+    
+    // Terminal screens (three each)
+    
+    TerminalScreen termAScreen1 = new TerminalScreen(termA, "TERMINAL A (1)");
+    TerminalScreen termAScreen2 = new TerminalScreen(termA, "TERMINAL A (2)");
+    TerminalScreen termAScreen3 = new TerminalScreen(termA, "TERMINAL A (3)");
+    termA.attach(termAScreen1);
+    termA.attach(termAScreen2);
+    termA.attach(termAScreen3);
+    
+    TerminalScreen termBScreen1 = new TerminalScreen(termB, "TERMINAL B (1)");
+    TerminalScreen termBScreen2 = new TerminalScreen(termB, "TERMINAL B (2)");
+    TerminalScreen termBScreen3 = new TerminalScreen(termB, "TERMINAL B (3)");
+    termB.attach(termBScreen1);
+    termB.attach(termBScreen2);
+    termB.attach(termBScreen3);
+    
+    TerminalScreen termCScreen1 = new TerminalScreen(termC, "TERMINAL C (1)");
+    TerminalScreen termCScreen2 = new TerminalScreen(termC, "TERMINAL C (2)");
+    TerminalScreen termCScreen3 = new TerminalScreen(termC, "TERMINAL C (3)");
+    termC.attach(termCScreen1);
+    termC.attach(termCScreen2);
+    termC.attach(termCScreen3);
+    
+    // Gates and gate screens
+    
+    // Terminal A
+    for(int i = 0; i < gatesA.length; ++i) {
+      gatesA[i] = new Gate("A-" + (i + 1));
+      gatesA[i].attach(new GateScreen(gatesA[i]));
+    }
+    
+    // Terminal B
+    for(int i = 0; i < gatesB.length; ++i) {
+      gatesB[i] = new Gate("B-" + (i + 1));
+      gatesB[i].attach(new GateScreen(gatesB[i]));
+    }
+    
+    // Terminal C
+    for(int i = 0; i < gatesC.length; ++i) {
+      gatesC[i] = new Gate("C-" + (i + 1));
+      gatesC[i].attach(new GateScreen(gatesC[i]));
+    }
+  }
+  
+  /**
+   * Adds a new flight based on user-provided information.
+   */
+  public void addFlight() {
+    
+    // Collect flight information from the console
+    
+    System.out.print("Company: ");
+    String company = scan.next();
+    
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+    
+    System.out.print("Destination: ");
+    String destination = scan.next();
+    
+    System.out.print("Departure Time (0000): ");
+    int departureTime = scan.nextInt();
+    
+    System.out.print("Terminal (A, B, C): ");
+    String terminal = scan.next();
+    
+    System.out.print("Gate Number: ");
+    int gateNumber = scan.nextInt();
+    
+    System.out.println("Status:");
+    System.out.println("1 - " + Flight.ONTIME);
+    System.out.println("2 - " + Flight.CANCELLED);
+    System.out.println("3 - " + Flight.BOARDING);
+    System.out.println("4 - " + Flight.DELAYED);
+    int statusInt = scan.nextInt();
+    String statusStr = "";
+    switch(statusInt) {
+      case 1: statusStr = Flight.ONTIME; break;
+      case 2: statusStr = Flight.CANCELLED; break;
+      case 3: statusStr = Flight.BOARDING; break;
+      case 4: statusStr = Flight.DELAYED; break;
+    }
+    
+    // Create an instance of Flight
+    Flight flight = new Flight(company, flightNumber, destination,
+      departureTime, terminal + "-" + gateNumber, statusStr);
+    
+    // Add it to the airport's list of flights
+    airport.addFlight(flight);
+    
+    // Add it to the appropriate terminal and gate
+    switch(terminal) {
+      case "A":
+        termA.addFlight(flight);
+        gatesA[gateNumber - 1].addFlight(flight);
+        break;
+      case "B":
+        termB.addFlight(flight);
+        gatesB[gateNumber - 1].addFlight(flight);
+        break;
+      case "C":
+        termC.addFlight(flight);
+        gatesC[gateNumber - 1].addFlight(flight);
+        break;        
+    }
+  }
+  
+  /*
+   * TODO: Implement the following methods. You may add other methods as well.
+   */
+  
+ public void delayFlight() {
+
+    System.out.print("Company: ");
+    String company = scan.next();
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    boolean flightFound = false;
+
+    // Delay flight in Airport
+    for (Flight flight : airport.getFlights()) {
+        if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+            flight.setStatus(Flight.DELAYED);
+            airport.notifyObservers();
+            flightFound = true;
+        }
+    }
+
+    // Delay flight in Terminals
+    Terminal[] terminals = {termA, termB, termC};
+    for (Terminal terminal : terminals) {
+        for (Flight flight : terminal.getFlights()) {
+            if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                flight.setStatus(Flight.DELAYED);
+                terminal.notifyObservers();
+                flightFound = true;
+            }
+        }
+    }
+
+    // Delay flight in Gates
+    Gate[][] allGates = {gatesA, gatesB, gatesC};
+    for (Gate[] gates : allGates) {
+        for (Gate gate : gates) {
+            for (Flight flight : gate.getFlights()) {
+                if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                    flight.setStatus(Flight.DELAYED);
+                    gate.notifyObservers();
+                    flightFound = true;
+                }
+            }
+        }
+    }
+
+    if (!flightFound) {
+        System.out.println("Flight not found.");
+    }
+}
+
+
+
+
+
+public void changeGate() {
+    System.out.print("Company: ");
+    String company = scan.next();
+
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    System.out.print("Terminal (A, B, C): ");
+    String terminal = scan.next();
+
+    System.out.print("Gate Number: ");
+    int gateNumber = scan.nextInt();
+
+    List<Map.Entry<Flight, Subject>> results = new ArrayList<>();
+
+    // Create a list of subjects (airport, terminals, gates)
+    List<Subject> subjects = new ArrayList<>();
+    subjects.add(airport); 
+    subjects.add(termA);   
+    subjects.add(termB);   
+    subjects.add(termC);   
+    subjects.addAll(Arrays.asList(gatesA));  
+    subjects.addAll(Arrays.asList(gatesB));  
+    subjects.addAll(Arrays.asList(gatesC));  
+
+    // Collect matching flights from subjects
+    for (Subject subject : subjects) {
+        if (subject instanceof Airport) {
+            for (Flight flight : airport.getFlights()) {
+                if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                    results.add(Map.entry(flight, airport));
+                }
+            }
+        } else if (subject instanceof Terminal) {
+            Terminal terminalSubject = (Terminal) subject;
+            for (Flight flight : terminalSubject.getFlights()) {
+                if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                    results.add(Map.entry(flight, terminalSubject));
+                }
+            }
+        } else if (subject instanceof Gate) {
+            Gate gateSubject = (Gate) subject;
+            for (Flight flight : gateSubject.getFlights()) {
+                if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                    results.add(Map.entry(flight, gateSubject));
+                }
+            }
+        }
+    }
+
+    if (results.isEmpty()) {
+        System.out.println("Flight not found.");
+        return;
+    }
+
+    // Use a map to check for available gates for the terminal
+    Map<String, Gate[]> terminalGatesMap = new HashMap<>();
+    terminalGatesMap.put("A", gatesA);
+    terminalGatesMap.put("B", gatesB);
+    terminalGatesMap.put("C", gatesC);
+
+    Gate[] tempGateCheck = terminalGatesMap.get(terminal);
+    boolean gateTaken = false;
+
+    // Check if the requested gate is available
+    if (tempGateCheck != null) {
+        for (Gate g : tempGateCheck) {
+            int gateNum = Integer.parseInt(g.getGateName().split("-")[1]);
+            if (gateNum == gateNumber && !g.getFlights().isEmpty()) {
+                gateTaken = true;
+                break;
+            }
+        }
+    }
+
+    if (gateTaken) {
+        System.out.println("New gate " + terminal + "-" + gateNumber + " is not available");
+        return;
+    }
+
+    // Flag to check if the flight is moving to a different terminal
+    boolean differentTerminal = false;
+
+    // Remove the flight from the current terminal/gate
+    for (Map.Entry<Flight, Subject> entry : results) {
+        Flight flight = entry.getKey();
+        Subject subject = entry.getValue();
+        String currentTerminal = flight.getGate().split("-")[0];
+
+        if (!currentTerminal.equals(terminal)) {
+            if (subject instanceof Terminal) {
+                subject.removeFlight(flight);
+                differentTerminal = true;
+            }
+        }
+
+        if (subject instanceof Gate) {
+            subject.removeFlight(flight);
+        }
+    }
+
+    // Add the flight to the new gate and terminal
+    for (Map.Entry<Flight, Subject> entry : results) {
+        Flight flight = entry.getKey();
+        Subject subject = entry.getValue();
+
+        // Set the new gate for the flight
+        flight.setGate(terminal + "-" + gateNumber);
+
+        // Notify the airport observers if needed
+        if (subject instanceof Airport && subject.getFlights().size() > 0) {
+            subject.notifyObservers();
+        }
+
+        // Move the flight to the new terminal if necessary
+        if (differentTerminal && subject instanceof Terminal) {
+            switch (terminal) {
+                case "A":
+                    termA.addFlight(flight);
+                    break;
+                case "B":
+                    termB.addFlight(flight);
+                    break;
+                case "C":
+                    termC.addFlight(flight);
+                    break;
+            }
+        }
+
+        // Notify terminal observers
+        if (subject instanceof Terminal && subject.getFlights().size() > 0) {
+            subject.notifyObservers();
+        }
+
+        // Add the flight to the new gate
+        if (subject instanceof Gate) {
+            switch (terminal) {
+                case "A":
+                    gatesA[gateNumber - 1].addFlight(flight);
+                    break;
+                case "B":
+                    gatesB[gateNumber - 1].addFlight(flight);
+                    break;
+                case "C":
+                    gatesC[gateNumber - 1].addFlight(flight);
+                    break;
+            }
+
+            // Notify the gate observers
+            if (subject.getFlights().size() > 0) {
+                subject.notifyObservers();
+            }
+        }
+    }
+}
+
+
+
+
+public void cancelFlight() {
+    System.out.print("Company: ");
+    String company = scan.next();
+
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    List<Map.Entry<Flight, Subject>> results = new ArrayList<>();
+
+    List<Subject> subjects = new ArrayList<>();
+    subjects.add(airport);
+    subjects.addAll(Arrays.asList(termA, termB, termC));
+    subjects.addAll(Arrays.asList(gatesA));
+    subjects.addAll(Arrays.asList(gatesB));
+    subjects.addAll(Arrays.asList(gatesC));
+
+    for (Subject subject : subjects) {
+        Collection<Flight> flights = null;
+        if (subject instanceof Airport) {
+            flights = ((Airport) subject).getFlights();
+        } else if (subject instanceof Terminal) {
+            flights = ((Terminal) subject).getFlights();
+        } else if (subject instanceof Gate) {
+            flights = ((Gate) subject).getFlights();
+        }
+
+        if (flights == null) continue;
+
+        for (Flight flight : flights) {
+            if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                results.add(Map.entry(flight, subject));
+            }
+        }
+    }
+
+    if (results.isEmpty()) {
+        System.out.println("Flight not found.");
+        return;
+    }
+
+    for (Map.Entry<Flight, Subject> entry : results) {
+        Flight flight = entry.getKey();
+        Subject subject = entry.getValue();
+
+        flight.setStatus(Flight.CANCELLED);
+
+        subject.notifyObservers();
+    }
+}
+
+ 
+public void notifyBoarding() {
+    System.out.print("Company: ");
+    String company = scan.next();
+
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    List<Map.Entry<Flight, Subject>> results = new ArrayList<>();
+
+    List<Subject> subjects = new ArrayList<>();
+    subjects.add(airport); // Adding airport as a subject
+    subjects.addAll(Arrays.asList(termA, termB, termC)); 
+    subjects.addAll(Arrays.asList(gatesA)); 
+    subjects.addAll(Arrays.asList(gatesB)); 
+    subjects.addAll(Arrays.asList(gatesC)); 
+
+   
+    for (Subject subject : subjects) {
+   
+        Collection<Flight> flights = null;
+        if (subject instanceof Airport) {
+            flights = ((Airport) subject).getFlights();
+        } else if (subject instanceof Terminal) {
+            flights = ((Terminal) subject).getFlights();
+        } else if (subject instanceof Gate) {
+            flights = ((Gate) subject).getFlights();
+        }
+
+ 
+        if (flights == null) continue;
+
+
+        for (Flight flight : flights) {
+            if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                results.add(Map.entry(flight, subject));
+            }
+        }
+    }
+
+    // If no results were found, notify the user and exit
+    if (results.isEmpty()) {
+        System.out.println("Flight not found.");
+        return;
+    }
+
+    // Notify boarding for each matching flight
+    for (Map.Entry<Flight, Subject> entry : results) {
+        Flight flight = entry.getKey();
+        Subject subject = entry.getValue();
+
+        // Set the flight status to BOARDING
+        flight.setStatus(Flight.BOARDING);
+
+        // Notify all observers for the subject (Airport, Terminal, or Gate)
+        subject.notifyObservers();
+    }
+}
+
+
+
+public void removeFlight() {
+    System.out.print("Company: ");
+    String company = scan.next();
+
+    System.out.print("Flight Number: ");
+    int flightNumber = scan.nextInt();
+
+    List<Map.Entry<Flight, Subject>> results = new ArrayList<>();
+
+    List<Subject> subjects = new ArrayList<>();
+    subjects.add(airport); 
+    subjects.addAll(Arrays.asList(termA, termB, termC)); 
+    subjects.addAll(Arrays.asList(gatesA));
+    subjects.addAll(Arrays.asList(gatesB)); 
+    subjects.addAll(Arrays.asList(gatesC)); 
+
+    for (Subject subject : subjects) {
+        Collection<Flight> flights = null;
+        if (subject instanceof Airport) {
+            flights = ((Airport) subject).getFlights();
+        } else if (subject instanceof Terminal) {
+            flights = ((Terminal) subject).getFlights();
+        } else if (subject instanceof Gate) {
+            flights = ((Gate) subject).getFlights();
+        }
+
+        if (flights == null) continue;
+
+        for (Flight flight : flights) {
+            if (flight.getFlightNumber() == flightNumber && flight.getCompany().equals(company)) {
+                results.add(Map.entry(flight, subject));
+            }
+        }
+    }
+
+    if (results.isEmpty()) {
+        System.out.println("Flight not found.");
+        return;
+    }
+
+    for (Map.Entry<Flight, Subject> entry : results) {
+        Flight flight = entry.getKey();
+        Subject subject = entry.getValue();
+        subject.removeFlight(flight);
+    }
+}
+
+  
+  /**
+   * Displays the options available in the console.
+   * DO NOT EDIT
+   */
+  public void displayMenu() {
+    System.out.println("********************");
+    System.out.println("1 - Add Flight");
+    System.out.println("2 - Delay Flight");
+    System.out.println("3 - Change Gate");
+    System.out.println("4 - Cancel Flight");
+    System.out.println("5 - Notify Boarding");
+    System.out.println("6 - Remove Flight");
+    System.out.println("0 - Quit");
+    System.out.println("********************");
+  }
+  
+  /**
+   * Displays the choice menu, waits for the user input, and calls the appropriate method.
+   * DO NOT EDIT
+   */
+  public void displayPrompt() {
+    int option = 0;
+    
+    do {
+      displayMenu();
+      System.out.print("Select Option: ");
+      option = scan.nextInt();
+      
+      switch(option) {
+        case 1: addFlight(); break;
+        case 2: delayFlight(); break;
+        case 3: changeGate(); break;
+        case 4: cancelFlight(); break;
+        case 5: notifyBoarding(); break;
+        case 6: removeFlight(); break;
+        case 0: scan.close(); break;
+        default:
+          System.out.println("Error - stop");
+          scan.close();
+          return;
+      }
+    } while (option != 0); // While the option is not Quit
+  }
+  
+  /**
+   * Creates all the objects and starts the simulation.
+   * DO NOT EDIT
+   */
+  public static void main(String[] args) {
+    ConsoleApp app = new ConsoleApp();
+    
+    // Object setup
+    app.createObjects();
+    
+    // Start the simulation
+    app.displayPrompt();
+  }
+
+}

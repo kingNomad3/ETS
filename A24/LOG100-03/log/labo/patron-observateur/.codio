@@ -1,0 +1,16 @@
+{
+// Configure your Run and Preview buttons here.
+
+// Run button configuration
+  "commands": {
+        "Run ConsoleApp": "/home/codio/workspace/run.sh src/ConsoleApp.java",
+        "Run Current": "/home/codio/workspace/run.sh {{filepath}}",
+        "Generate Javadoc": "find ~/workspace/src -type f -name \"*.java\" | xargs javadoc -d ~/workspace/doc"
+  },
+
+// Preview button configuration
+  "preview": {
+        "View Javadoc": "doc/index.html"
+  },
+  "debugger": [{"type":"JAVA","command":"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5105","before":"./debug.sh {{filepath}}","uuid":"8cca4f28-55e9-cd11-1f76-cbf456480492","name":"Debug Current"},{"type":"JAVA","command":"-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=5105","before":"./debug.sh src/ConsoleApp.java","uuid":"16f5a8e7-d42e-126f-07c2-ff816c5c2a91","name":"Debug ConsoleApp"}]
+}
