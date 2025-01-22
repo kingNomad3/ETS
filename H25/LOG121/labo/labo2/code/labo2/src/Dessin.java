@@ -19,11 +19,16 @@ public class Dessin implements ComposantDessin {
 
     @Override
     public void afficher(AffichageStrategie strategy, int niveau, String chemin) {
+        if (niveau > 3) { // Stop recursion after depth 3
+            return;
+        }
+
         strategy.afficher(this, niveau, chemin);
         for (ComposantDessin enfant : enfants) {
             enfant.afficher(strategy, niveau + 1, enfant.getNom());
         }
     }
+
 
 
     @Override
