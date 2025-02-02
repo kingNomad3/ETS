@@ -2,10 +2,7 @@ package com.example.demo;
 
 import javafx.collections.FXCollections;
 import javafx.geometry.Insets;
-import javafx.scene.control.CheckBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.VBox;
 import javafx.scene.text.Text;
@@ -18,7 +15,7 @@ public class PaymentForm {
     private TextField creditCardNumber,expirationDate,cvv;
     private TextField giftCardNumber;
     private TextField shippingAddress, billingAddress;
-    private CheckBox sameAddress;
+    private RadioButton sameAddress;
     private ComboBox<DeliveryOption> deliveryOption;
 
     private final String TITRE = "Formulaire de paiment";
@@ -29,7 +26,7 @@ public class PaymentForm {
         root.setPadding(new Insets(10));
 
         Label titleLabel = new Label(TITRE);
-        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;");
+        titleLabel.setStyle("-fx-font-size: 16px; -fx-font-weight: bold;-fx-underline: true;");
 
         GridPane grid = new GridPane();
         grid.setHgap(10);
@@ -51,7 +48,7 @@ public class PaymentForm {
         //addresse
         shippingAddress = new TextField();
         billingAddress = new TextField();
-        sameAddress = new CheckBox("L'adresse de facturation est la meme que l'adresse de livraison");
+        sameAddress = new RadioButton("L'adresse de facturation est la meme que l'adresse de livraison");
 
 
         //options de livraison
@@ -93,23 +90,23 @@ public class PaymentForm {
 
         // Adresse de livraison
         Label shippingLabel = new Label("Adresse de livraison :");
-        GridPane.setMargin(shippingLabel, new Insets(0, 0, 0, 0)); // Make sure it aligns with others
+        GridPane.setMargin(shippingLabel, new Insets(0, 0, 0, 0));
         grid.add(shippingLabel, 0, 5);
         grid.add(shippingAddress, 1, 5, 2, 1);
 
         // Checkbox (Adresse de facturation même que livraison)
-        GridPane.setMargin(sameAddress, new Insets(5, 0, 0, 0)); // Move slightly left and add spacing
+        GridPane.setMargin(sameAddress, new Insets(5, 0, 0, 0));
         grid.add(sameAddress, 0, 6, 2, 1);
 
         // Adresse de facturation
         Label billingLabel = new Label("Adresse de facturation :");
-        GridPane.setMargin(billingLabel, new Insets(0, 0, 0, 0)); // Align with others
+        GridPane.setMargin(billingLabel, new Insets(0, 0, 0, 0));
         grid.add(billingLabel, 0, 7);
         grid.add(billingAddress, 1, 7, 2, 1);
 
         // Option de livraison
         Label deliveryLabel = new Label("Option de livraison :");
-        GridPane.setMargin(deliveryLabel, new Insets(0, 0, 0, 0)); // Align with others
+        GridPane.setMargin(deliveryLabel, new Insets(0, 0, 0, 0));
         grid.add(deliveryLabel, 0, 8);
         grid.add(deliveryOption, 1, 8, 2, 1);
 

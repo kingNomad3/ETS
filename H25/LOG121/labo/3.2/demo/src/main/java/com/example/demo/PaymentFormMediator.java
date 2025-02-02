@@ -1,10 +1,9 @@
 package com.example.demo;
 
 import javafx.collections.FXCollections;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.RadioButton;
 import javafx.scene.control.TextField;
-import javafx.scene.text.Text;
 
 public class PaymentFormMediator {
 
@@ -12,12 +11,12 @@ public class PaymentFormMediator {
     private TextField creditCardNumber, expirationDate, cvv;
     private TextField giftCardNumber;
     private TextField shippingAddress, billingAdress;
-    private CheckBox sameAddress;
+    private RadioButton sameAddress;
     private ComboBox<DeliveryOption> deliveryOption;
 
     public PaymentFormMediator(ComboBox<PaymentOption> paymentMethod, TextField creditCardNumber,
                                TextField expirationDate, TextField cvv, TextField giftCardNumber, TextField shippingAddress,
-                               TextField billingAdress, CheckBox sameAddress, ComboBox<DeliveryOption> deliveryOption) {
+                               TextField billingAdress, RadioButton sameAddress, ComboBox<DeliveryOption> deliveryOption) {
         this.paymentMethod = paymentMethod;
         this.creditCardNumber = creditCardNumber;
         this.expirationDate = expirationDate;
